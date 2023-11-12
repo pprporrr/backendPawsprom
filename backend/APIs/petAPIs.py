@@ -651,17 +651,9 @@ async def get_user_dashboard_info(request: Request):
         username = data.get("username")
         userRole = data.get("userRole")
         
-        if None in (username, userRole):
-            return create_error_response("missing 'username or userRole' in the request data")
         if shelterID:
-            getShelterIDQuery = "SELECT shelter_shelterID FROM user WHERE username = %s AND userRole = %s"
-            getShelterIDResult = await db_connector.execute_query(getShelterIDQuery, username, userRole)
-            
-            if not getShelterIDResult:
-                return create_error_response("user not found")
-            
             getPetQuery = "SELECT petID FROM pet WHERE shelter_shelterID = %s"
-            getPetResult = await db_connector.execute_query(getPetQuery, getShelterIDResult[0])
+            getPetResult = await db_connector.execute_query(getPetQuery, shelterID)
             
             pet_info_list = []
             
@@ -696,6 +688,9 @@ async def get_user_dashboard_info(request: Request):
                         pet_info_list.append(petInfo)
             
             return create_success_response({"Available": pet_info_list})
+        
+        if None in (username, userRole):
+            return create_error_response("missing 'username or userRole' in the request data")
         
         if userRole == "User":
             getUserQuery = "SELECT userID FROM user WHERE username = %s AND userRole = %s"
