@@ -32,10 +32,10 @@ class DBConnector:
 
 def get_db_connector():
     db_config = {
-        "host": "pawsprom.cgdgakyqi7xb.us-east-1.rds.amazonaws.com",
+        "host": "pawsprom-rds.cw9sptej10m2.us-east-1.rds.amazonaws.com",
         "port": 3306,
         "user": "admin",
-        "password": "pawsprom",
+        "password": "pawsprom-rds",
         "database": "pawsprom"
     }
     return DBConnector(**db_config)
