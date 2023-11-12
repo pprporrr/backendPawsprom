@@ -647,11 +647,55 @@ async def get_user_dashboard_info(request: Request):
         await db_connector.connect()
         data = await request.json()
         
+        shelterID = data.get("shelterID")
         username = data.get("username")
         userRole = data.get("userRole")
         
         if None in (username, userRole):
             return create_error_response("missing 'username or userRole' in the request data")
+        if shelterID:
+            getShelterIDQuery = "SELECT shelter_shelterID FROM user WHERE username = %s AND userRole = %s"
+            getShelterIDResult = await db_connector.execute_query(getShelterIDQuery, username, userRole)
+            
+            if not getShelterIDResult:
+                return create_error_response("user not found")
+            
+            getPetQuery = "SELECT petID FROM pet WHERE shelter_shelterID = %s"
+            getPetResult = await db_connector.execute_query(getPetQuery, getShelterIDResult[0])
+            
+            pet_info_list = []
+            
+            for petID in getPetResult:
+                try:
+                    getPetDetailsQuery = "SELECT * FROM pet WHERE petID = %s"
+                    getPetDetailsResult = await db_connector.execute_query(getPetDetailsQuery, petID)
+                    
+                    getPetImagesQuery = "SELECT imageID FROM petImages WHERE pet_petID = %s"
+                    getPetImagesResult = await db_connector.execute_query(getPetImagesQuery, petID)
+                except:
+                    pet_info_list.append({"petID": petID, "error": "pet not found"})
+                
+                if getPetDetailsResult[0][11] == "Available":
+                    checkAdoptionQuery = "SELECT * FROM adoptionApplication WHERE pet_petID = %s AND approvalStatus = %s"
+                    checkAdoptionResult = await db_connector.execute_query(checkAdoptionQuery, petID, "Pending")
+                    
+                    if checkAdoptionResult:
+                        pass
+                    else:
+                        petInfo = {
+                            "petID": getPetDetailsResult[0][0],
+                            "petName": getPetDetailsResult[0][1],
+                            "species": getPetDetailsResult[0][2],
+                            "breed": getPetDetailsResult[0][3],
+                            "availabilityStatus": getPetDetailsResult[0][11],
+                            "vaccinationRecord": getPetDetailsResult[0][12],
+                            "imageIDs": [imageID for sublist in getPetImagesResult for imageID in sublist],
+                            "features": json.loads(getPetDetailsResult[0][10])
+                        }
+                        
+                        pet_info_list.append(petInfo)
+            
+            return create_success_response({"Available": pet_info_list})
         
         if userRole == "User":
             getUserQuery = "SELECT userID FROM user WHERE username = %s AND userRole = %s"
@@ -679,6 +723,7 @@ async def get_user_dashboard_info(request: Request):
                     pet_info_list.append({"petID": petID, "error": "pet not found"})
                 
                 petInfo = {
+                    "petID": getPetDetailsResult[0][0],
                     "petName": getPetDetailsResult[0][1],
                     "species": getPetDetailsResult[0][2],
                     "breed": getPetDetailsResult[0][3],
@@ -706,6 +751,7 @@ async def get_user_dashboard_info(request: Request):
                     pet_info_list_requested.append({"petID": petID, "error": "pet not found"})
                 
                 petInfo = {
+                    "petID": getPetDetailsResult[0][0],
                     "petName": getPetDetailsResult[0][1],
                     "species": getPetDetailsResult[0][2],
                     "breed": getPetDetailsResult[0][3],
@@ -747,6 +793,7 @@ async def get_user_dashboard_info(request: Request):
                     
                     if checkAdoptionResult:
                         petInfo = {
+                            "petID": getPetDetailsResult[0][0],
                             "petName": getPetDetailsResult[0][1],
                             "species": getPetDetailsResult[0][2],
                             "breed": getPetDetailsResult[0][3],
@@ -759,6 +806,7 @@ async def get_user_dashboard_info(request: Request):
                         pet_info_list_requested.append(petInfo)
                     else:
                         petInfo = {
+                            "petID": getPetDetailsResult[0][0],
                             "petName": getPetDetailsResult[0][1],
                             "species": getPetDetailsResult[0][2],
                             "breed": getPetDetailsResult[0][3],
