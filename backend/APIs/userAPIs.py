@@ -214,7 +214,7 @@ async def login_user(request: Request):
         if None in (username, password):
             return create_error_response("missing username or password")
         
-        getUserQuery = "SELECT password, userRole FROM user WHERE username = %s"
+        getUserQuery = "SELECT password, userRole, userID FROM user WHERE username = %s"
         getUserResult = await db_connector.execute_query(getUserQuery, username)
         
         if not getUserResult:
@@ -232,8 +232,9 @@ async def login_user(request: Request):
                     return create_error_response("user not found")
                 
                 userDetails = {
-                    "username": getUserInfoResult[0][1],
-                    "userRole": getUserInfoResult[0][7],
+                    "userID": getUserResult[0][2],
+                    "username": username,
+                    "userRole": userRole,
                     "firstName": getUserInfoResult[0][3],
                     "lastName": getUserInfoResult[0][4],
                     "phoneNumber": getUserInfoResult[0][5],
@@ -256,6 +257,7 @@ async def login_user(request: Request):
                     return create_error_response("shelter not found")
                 
                 shelterDetails = {
+                    "userID": getUserResult[0][2],
                     "username": username, 
                     "userRole": userRole,
                     "shelterID": getShelterResult[0][0],

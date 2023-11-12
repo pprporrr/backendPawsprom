@@ -226,6 +226,7 @@ async def get_pet_profiles_short(request: Request):
                 getShelterResult = await db_connector.execute_query(getShelterQuery, getPetDetailsResult[0][13])
                 
                 petInfo = {
+                    "petID": getPetDetailsResult[0][0],
                     "petName": getPetDetailsResult[0][1],
                     "species": getPetDetailsResult[0][2],
                     "breed": getPetDetailsResult[0][3],
@@ -245,6 +246,7 @@ async def get_pet_profiles_short(request: Request):
                 getOwnerResult = await db_connector.execute_query(getOwnerQuery, getPetOwnerResult[0][2])
                 
                 petInfo = {
+                    "petID": getPetDetailsResult[0][0],
                     "petName": getPetDetailsResult[0][1],
                     "species": getPetDetailsResult[0][2],
                     "breed": getPetDetailsResult[0][3],
@@ -305,6 +307,7 @@ async def get_pet_profile_long(request: Request):
                     applicationDict[userID] = {"firstName": getAddressResult[0][3], "lastName": getAddressResult[0][4], "phoneNo": getAddressResult[0][5], "address": getAddressResult[0][6], "dateofapplication": dateofapplication}
                 
                 petInfo = {
+                "petID": getPetDetailsResult[0][0],
                 "petName": getPetDetailsResult[0][1],
                 "species": getPetDetailsResult[0][2],
                 "breed": getPetDetailsResult[0][3],
@@ -335,6 +338,7 @@ async def get_pet_profile_long(request: Request):
                 getOwnerResult = await db_connector.execute_query(getOwnerQuery, getPetOwnerResult[0][2])
                 
                 petInfo = {
+                "petID": getPetDetailsResult[0][0],
                 "petName": getPetDetailsResult[0][1],
                 "species": getPetDetailsResult[0][2],
                 "breed": getPetDetailsResult[0][3],
@@ -348,6 +352,7 @@ async def get_pet_profile_long(request: Request):
                 "features": json.loads(getPetDetailsResult[0][10]),
                 "availabilityStatus": getPetDetailsResult[0][11],
                 "vaccinationRecord": getPetDetailsResult[0][12],
+                "vaccinationIDs": [row[0] for row in getPetVaccinesResult],
                 "vaccinationName": [row[2] for row in getPetVaccinesResult],
                 "vaccinationDate": [row[3] for row in getPetVaccinesResult],
                 "name": f"{getOwnerResult[0][3]} {getOwnerResult[0][4]}",
