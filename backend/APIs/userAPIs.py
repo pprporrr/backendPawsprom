@@ -266,7 +266,7 @@ async def login_user(request: Request):
                 }
                 return create_success_response(shelterDetails)
         else:
-            return create_error_response("invalid credentials")
+            return create_error_response({"userID": getUserInfoResult[0][0]})
         
     except Exception as e:
         return create_error_response(str(e))
